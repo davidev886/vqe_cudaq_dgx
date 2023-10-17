@@ -1,13 +1,15 @@
 import os
 import numpy as np
+import pickle
+import json
 from openfermion.transforms import jordan_wigner
 from openfermion import generate_hamiltonian
 from pyscf import gto, scf, ao2mo, mcscf
 from pyscf.lib import chkfile
 # from pyscf.scf.chkfile import dump_scf
+
 from src.vqe_cudaq_qnp import VqeQnp
 from src.utils_cudaq import get_cudaq_hamiltonian
-import pickle
 
 
 def molecule_data(atom_name):
@@ -28,26 +30,29 @@ if __name__ == "__main__":
     basis = 'cc-pvqz'
     spin = 0
     multiplicity = spin + 1
-    mol = gto.M(
-        atom=geometry,
-        basis=basis,
-        spin=spin,
-        verbose=4,
-    )
-    hf = scf.ROHF(mol)
-    hf.kernel()
-
-    print("# HF Energy: ", hf.e_tot)
-
     num_active_orbitals = 9
     num_active_electrons = 12
     hamiltonian_fname = f"ham_cudaq_O3_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o.pickle"
 
+    with open('input_vqe.json') as f:
+        options = json.load(f)
+    target = options.get("target", "nvidia")
+    print(target)
     try:
         filehandler = open(hamiltonian_fname, 'rb')
         jw_hamiltonian = pickle.load(filehandler)
         hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
     except:
+        mol = gto.M(
+            atom=geometry,
+            basis=basis,
+            spin=spin,
+            verbose=4,
+        )
+        hf = scf.ROHF(mol)
+        hf.kernel()
+
+        print("# HF Energy: ", hf.e_tot)
         my_casci = mcscf.CASCI(hf, num_active_orbitals, num_active_electrons)
         my_casci.kernel()
 
@@ -84,7 +89,8 @@ if __name__ == "__main__":
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
                      n_electrons=mol.nelec,
-                     init_mo_occ=init_mo_occ)
+                     init_mo_occ=init_mo_occ,
+                     target=target)
         print("# Start optimization VQE")
         energy, params = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
         print(energy, params)

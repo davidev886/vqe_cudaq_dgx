@@ -3,7 +3,7 @@ import numpy as np
 import cudaq
 
 class VqeQnp(object):
-    def __init__(self, n_qubits, n_layers, init_mo_occ=None, n_electrons=None):
+    def __init__(self, n_qubits, n_layers, init_mo_occ=None, n_electrons=None, target="nvidia"):
         self.n_qubits = n_qubits
         self.n_layers = n_layers
         self.number_of_Q_blocks = n_qubits // 2 - 1
@@ -13,6 +13,7 @@ class VqeQnp(object):
         self.best_vqe_params = None
         self.best_vqe_energy = None
         self.n_electrons = n_electrons
+        self.target = target
         self.initial_x_gates_pos = self.prepare_initial_circuit()
 
     def prepare_initial_circuit(self):
@@ -44,7 +45,8 @@ class VqeQnp(object):
         n_qubits = self.n_qubits
         n_layers = self.n_layers
         number_of_blocks = self.number_of_Q_blocks
-        cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
+        # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
+        cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
         kernel, thetas = cudaq.make_kernel(list)
         # Allocate n qubits.
         qubits = kernel.qalloc(n_qubits)
