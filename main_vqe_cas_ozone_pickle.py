@@ -60,7 +60,7 @@ if __name__ == "__main__":
         print("# Start CUDAQ hamiltonian generation")
         hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
 
-        filehandler = open(hamiltonian_fname, 'w')
+        filehandler = open(hamiltonian_fname, 'wb')
         # hamiltonian_fname = f"ham_cudaq_O3_{num_active_electrons}e_{num_active_orbitals}o.pickle"
         pickle.dump(jw_hamiltonian, filehandler)
         mc = my_casci
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         init_mo_occ = np.round(casdm1.diagonal())
         exit()
     else:
-        filehandler = open(hamiltonian_fname, 'r')
+        filehandler = open(hamiltonian_fname, 'rb')
         jw_hamiltonian = pickle.load(filehandler)
         hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
 
