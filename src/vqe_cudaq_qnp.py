@@ -3,7 +3,7 @@ import numpy as np
 import cudaq
 
 class VqeQnp(object):
-    def __init__(self, n_qubits, n_layers, init_mo_occ=None, n_electrons=None, target="nvidia"):
+    def __init__(self, n_qubits, n_layers, init_mo_occ=None, target="nvidia"):
         self.n_qubits = n_qubits
         self.n_layers = n_layers
         self.number_of_Q_blocks = n_qubits // 2 - 1
@@ -12,7 +12,6 @@ class VqeQnp(object):
         self.final_state_vector_best = None
         self.best_vqe_params = None
         self.best_vqe_energy = None
-        self.n_electrons = n_electrons
         self.target = target
         self.initial_x_gates_pos = self.prepare_initial_circuit()
 

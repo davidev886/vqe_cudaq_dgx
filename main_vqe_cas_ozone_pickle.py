@@ -88,7 +88,6 @@ if __name__ == "__main__":
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
-                     n_electrons=mol.nelec,
                      init_mo_occ=init_mo_occ,
                      target=target)
         print("# Start optimization VQE")
