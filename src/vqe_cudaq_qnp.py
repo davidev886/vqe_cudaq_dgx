@@ -44,7 +44,7 @@ class VqeQnp(object):
         n_qubits = self.n_qubits
         n_layers = self.n_layers
         number_of_blocks = self.number_of_Q_blocks
-        cudaq.set_target("nvidia") # nvidia or nvidia-mgpu
+        cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
         kernel, thetas = cudaq.make_kernel(list)
         # Allocate n qubits.
         qubits = kernel.qalloc(n_qubits)
