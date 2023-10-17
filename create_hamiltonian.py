@@ -46,7 +46,7 @@ if __name__ == "__main__":
         spin=spin,
         charge=charge,
         basis=basis,
-        verbose=8
+        verbose=4
         )
 
     mf = scf.ROHF(mol)
