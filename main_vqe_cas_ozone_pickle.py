@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     num_active_orbitals = 9
     num_active_electrons = 12
-    hamiltonian_fname = f"ham_cudaq_O3_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o.pickle"    
+    hamiltonian_fname = f"ham_cudaq_O3_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o.pickle"
     if not os.path.isfile(hamiltonian_fname):
         my_casci = mcscf.CASCI(hf, num_active_orbitals, num_active_electrons)
         my_casci.kernel()
@@ -62,15 +62,16 @@ if __name__ == "__main__":
 
         filehandler = open(hamiltonian_fname, 'w')
         # hamiltonian_fname = f"ham_cudaq_O3_{num_active_electrons}e_{num_active_orbitals}o.pickle"
-        pickle.dump(hamiltonian_cudaq, filehandler)
+        pickle.dump(jw_hamiltonian, filehandler)
         mc = my_casci
         casdm1, casdm2 = mc.fcisolver.make_rdm12(mc.ci, mc.ncas, mc.nelecas)
         init_mo_occ = np.round(casdm1.diagonal())
         exit()
     else:
         filehandler = open(hamiltonian_fname, 'r')
-        hamiltonian_cudaq = pickle.load(filehandler)
-  
+        jw_hamiltonian = pickle.load(filehandler)
+        hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
+
     n_qubits = 2 * num_active_orbitals
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
