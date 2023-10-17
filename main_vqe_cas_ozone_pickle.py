@@ -9,11 +9,12 @@ from src.vqe_cudaq_qnp import VqeQnp
 from src.utils_cudaq import get_cudaq_hamiltonian
 import pickle
 
+
 def molecule_data(atom_name):
     # table B1 angstrom
     molecules = {'ozone': [('O', (0.0000000, 0.0000000, 0.0000000)),
-                            ('O', (0.0000000, 0.0000000, 1.2717000)),
-                            ('O', (1.1383850, 0.0000000, 1.8385340))]}
+                           ('O', (0.0000000, 0.0000000, 1.2717000)),
+                           ('O', (1.1383850, 0.0000000, 1.8385340))]}
 
     return molecules[atom_name]
 
@@ -28,11 +29,11 @@ if __name__ == "__main__":
     spin = 0
     multiplicity = spin + 1
     mol = gto.M(
-            atom=geometry,
-            basis=basis,
-            spin=spin,
-            verbose=4,
-        )
+        atom=geometry,
+        basis=basis,
+        spin=spin,
+        verbose=4,
+    )
     hf = scf.ROHF(mol)
     hf.kernel()
 
@@ -41,7 +42,12 @@ if __name__ == "__main__":
     num_active_orbitals = 9
     num_active_electrons = 12
     hamiltonian_fname = f"ham_cudaq_O3_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o.pickle"
-    if not os.path.isfile(hamiltonian_fname):
+
+    try:
+        filehandler = open(hamiltonian_fname, 'rb')
+        jw_hamiltonian = pickle.load(filehandler)
+        hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
+    except:
         my_casci = mcscf.CASCI(hf, num_active_orbitals, num_active_electrons)
         my_casci.kernel()
 
@@ -63,14 +69,9 @@ if __name__ == "__main__":
         filehandler = open(hamiltonian_fname, 'wb')
         # hamiltonian_fname = f"ham_cudaq_O3_{num_active_electrons}e_{num_active_orbitals}o.pickle"
         pickle.dump(jw_hamiltonian, filehandler)
-        mc = my_casci
-        casdm1, casdm2 = mc.fcisolver.make_rdm12(mc.ci, mc.ncas, mc.nelecas)
-        init_mo_occ = np.round(casdm1.diagonal())
-        exit()
-    else:
-        filehandler = open(hamiltonian_fname, 'rb')
-        jw_hamiltonian = pickle.load(filehandler)
-        hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
+        # mc = my_casci
+        # casdm1, casdm2 = mc.fcisolver.make_rdm12(mc.ci, mc.ncas, mc.nelecas)
+        # init_mo_occ = np.round(casdm1.diagonal())
 
     n_qubits = 2 * num_active_orbitals
 
@@ -81,15 +82,16 @@ if __name__ == "__main__":
     for n_vqe_layers in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         vqe = VqeQnp(n_qubits=n_qubits,
-                 n_layers=n_vqe_layers,
-                 n_electrons=mol.nelec,
-                 init_mo_occ=init_mo_occ)
+                     n_layers=n_vqe_layers,
+                     n_electrons=mol.nelec,
+                     init_mo_occ=init_mo_occ)
         print("# Start optimization VQE")
         energy, params = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
-        np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat", np.array(results))
+        np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+                   np.array(results))
 
-    np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat", np.array(results))
-
+    np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+               np.array(results))
