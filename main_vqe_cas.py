@@ -19,16 +19,9 @@ if __name__ == "__main__":
     dmrg = options.get("dmrg", 0)
     dmrg_states = options.get("dmrg_states", 1000)
     spin = options.get("spin", 1)
+    hamiltonian_fname = options.get("hamiltonian_fname", 1)
 
-    hamiltonian_fname = f"ham_FeNTA_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o.pickle"
-    print(hamiltonian_fname)
-
-    if dmrg in (1, 'true'):
-        dir_path = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o/dmrg_M_{dmrg_states}"
-    else:
-        dir_path = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o"
-
-    filehandler = open(os.path.join(dir_path, hamiltonian_fname), 'rb')
+    filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)
 
     hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
