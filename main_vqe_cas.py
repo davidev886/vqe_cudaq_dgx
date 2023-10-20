@@ -28,7 +28,7 @@ if __name__ == "__main__":
     else:
         dir_path = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o"
 
-    filehandler = open(os.path.join(dir_path, hamiltonian_fname), 'wb')
+    filehandler = open(os.path.join(dir_path, hamiltonian_fname), 'rb')
     jw_hamiltonian = pickle.load(filehandler)
 
     hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
