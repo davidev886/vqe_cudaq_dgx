@@ -38,13 +38,18 @@ if __name__ == "__main__":
                      n_layers=n_vqe_layers,
                      init_mo_occ=init_mo_occ)
 
-        energy, params = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
-
+        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
+        exp_vals = np.array(exp_vals)
+        exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
         np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                    np.array(results))
+
+        np.savetxt(f"expvals_energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+                   exp_vals)
+
 
     np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                np.array(results))

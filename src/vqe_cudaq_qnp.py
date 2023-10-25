@@ -149,4 +149,4 @@ class VqeQnp(object):
         energy, parameter = optimizer.optimize(self.num_params, eval)
         # energy, parameter = optimizer.optimize(self.num_params, eval)
 
-        return energy, parameter
+        return energy, parameter, exp_vals
