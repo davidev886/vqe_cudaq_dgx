@@ -43,8 +43,8 @@ if __name__ == "__main__":
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
-        np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+        np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                    np.array(results))
 
-    np.savetxt(f"energy_ozone_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+    np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                np.array(results))
