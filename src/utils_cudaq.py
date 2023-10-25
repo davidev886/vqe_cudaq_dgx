@@ -2,15 +2,15 @@ import cudaq
 from cudaq import spin as spin_op
 
 
-def from_string_to_cudaq_spin(pauli_string, qubit, coeff=1.):
+def from_string_to_cudaq_spin(pauli_string, qubit):
     if pauli_string.lower() in ('id', 'i'):
-        return coeff
+        return 1
     elif pauli_string.lower() == 'x':
-        return coeff * spin_op.x(qubit)
+        return spin_op.x(qubit)
     elif pauli_string.lower() == 'y':
-        return coeff * spin_op.y(qubit)
+        return spin_op.y(qubit)
     elif pauli_string.lower() == 'z':
-        return coeff * spin_op.z(qubit)
+        return spin_op.z(qubit)
 
 
 def get_cudaq_hamiltonian(jw_hamiltonian):
@@ -24,9 +24,10 @@ def get_cudaq_hamiltonian(jw_hamiltonian):
         if len(operators):
             cuda_operator = 1.0
             for qubit_index, pauli_op in operators:
-                cuda_operator *= from_string_to_cudaq_spin(pauli_op, qubit_index, ham_coeff)
+                cuda_operator *= from_string_to_cudaq_spin(pauli_op, qubit_index)
         else:
-            cuda_operator = from_string_to_cudaq_spin('id', 0, ham_coeff.real)
+            cuda_operator = from_string_to_cudaq_spin('id', 0)
+        cuda_operator = ham_coeff * cuda_operator
         hamiltonian_cudaq += cuda_operator
 
     return hamiltonian_cudaq
