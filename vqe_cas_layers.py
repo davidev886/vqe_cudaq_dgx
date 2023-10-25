@@ -47,7 +47,9 @@ if __name__ == "__main__":
         np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                    np.array(results))
 
-        np.savetxt(f"expvals_energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+        np.savetxt(f"expvals_energy_fenta_{basis.lower()}_"
+                   f"cas_{num_active_electrons}e_{num_active_orbitals}o_"
+                   f"layer_{n_vqe_layers}.dat",
                    exp_vals)
 
 
