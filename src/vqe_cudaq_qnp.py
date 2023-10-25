@@ -115,7 +115,7 @@ class VqeQnp(object):
         Run VQE
         """
         #optimizer = cudaq.optimizers.NelderMead()
-        optimizer = cudaq.optimizers.LBFGS()
+        optimizer = cudaq.optimizers.COBYLA()
         optimizer.initial_parameters = np.random.rand(self.num_params)
         kernel, thetas = self.layers()
         optimizer.max_iterations = options.get('maxiter', 100)
