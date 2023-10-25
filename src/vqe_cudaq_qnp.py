@@ -125,11 +125,11 @@ class VqeQnp(object):
         # Finally, we can pass all of that into `cudaq.vqe` and it will automatically run our
         # optimization loop and return a tuple of the minimized eigenvalue of our `spin_operator`
         # and the list of optimal variational parameters.
-        energy, parameter = cudaq.vqe(
-            kernel=kernel,
-            spin_operator=hamiltonian,
-            optimizer=optimizer,
-            parameter_count=self.num_params)
+        # energy, parameter = cudaq.vqe(
+        #    kernel=kernel,
+        #    spin_operator=hamiltonian,
+        #    optimizer=optimizer,
+        #    parameter_count=self.num_params)
 
         #def eval(theta):
         #    # Callback goes here
@@ -137,6 +137,16 @@ class VqeQnp(object):
         #    print(value)
         #    return value
 
-        #energy, parameter = optimizer.optimize(self.num_params, eval)
+        exp_vals = []
+
+        def eval(theta):
+            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation_z()
+
+            exp_vals.append(exp_val)
+
+            return exp_val
+
+        energy, parameter = optimizer.optimize(self.num_params, eval)
+        # energy, parameter = optimizer.optimize(self.num_params, eval)
 
         return energy, parameter
