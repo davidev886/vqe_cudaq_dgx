@@ -5,6 +5,7 @@ import pickle
 import json
 from src.vqe_cudaq_qnp import VqeQnp
 from src.utils_cudaq import get_cudaq_hamiltonian
+import time
 
 if __name__ == "__main__":
     np.set_printoptions(precision=6, suppress=True, linewidth=10000)
@@ -23,8 +24,10 @@ if __name__ == "__main__":
 
     filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)
-
+    start = time.time()
     hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
+    end = time.time()
+    print("time for preparing the cudaq hamiltonian": end-start)
 
     n_qubits = 2 * num_active_orbitals
 
@@ -32,7 +35,7 @@ if __name__ == "__main__":
     init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
 
     results = []
-    for n_vqe_layers in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
+    for n_vqe_layers in [1, 2 , 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
