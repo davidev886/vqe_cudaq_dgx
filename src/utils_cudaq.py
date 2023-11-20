@@ -2,7 +2,7 @@ import cudaq
 from cudaq import spin as spin_op
 import openfermion as of
 from openfermion.hamiltonians import s_squared_operator
-
+from openfermion.transforms import jordan_wigner
 
 def from_string_to_cudaq_spin(pauli_string, qubit):
     if pauli_string.lower() in ('id', 'i'):
@@ -36,7 +36,9 @@ def get_cudaq_hamiltonian(jw_hamiltonian):
 
 
 def buildOperatorMatrix(name: str, n_qubits):
-    """The name can either be: number, alpha, beta, projected or total."""
+    """The name can either be: number, alpha, beta, projected or total.
+        return a cuda quantum operator
+    """
 
     operator = of.FermionOperator()
 
@@ -73,6 +75,26 @@ def buildOperatorMatrix(name: str, n_qubits):
     elif name == "total":
         operator = s_squared_operator(n_spatial_orbitals=n_qubits // 2)
 
-    sparse_operator = of.get_sparse_operator(operator, n_qubits=n_qubits)
+    jw_operator = jordan_wigner(operator)
+    cudaq_op = get_cudaq_operator(jw_operator)
+    return cudaq_op
 
-    return sparse_operator
+
+def get_cudaq_operator(jw_hamiltonian):
+    """ Converts an openfermion QubitOperator Hamiltonian into a cudaq.SpinOperator Hamiltonian
+
+    """
+
+    hamiltonian_cudaq = 0.0
+    for ham_term in jw_hamiltonian:
+        [(operators, ham_coeff)] = ham_term.terms.items()
+        if len(operators):
+            cuda_operator = 1.0
+            for qubit_index, pauli_op in operators:
+                cuda_operator *= from_string_to_cudaq_spin(pauli_op, qubit_index)
+        else:
+            cuda_operator = from_string_to_cudaq_spin('id', 0)
+        cuda_operator = ham_coeff * cuda_operator
+        hamiltonian_cudaq += cuda_operator
+
+    return hamiltonian_cudaq

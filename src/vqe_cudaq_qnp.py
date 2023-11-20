@@ -2,6 +2,7 @@ import numpy as np
 
 import cudaq
 from src.utils_cudaq import buildOperatorMatrix
+from src.utils_cudaq import  g
 import pandas as pd
 
 
