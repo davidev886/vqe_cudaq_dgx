@@ -115,7 +115,7 @@ class VqeQnp(object):
         Run VQE
         """
         #optimizer = cudaq.optimizers.NelderMead()
-        optimizer = cudaq.optimizers.COBYLA()
+        optimizer = cudaq.optimizers.LBFGS()
         optimizer.initial_parameters = np.random.rand(self.num_params)
         kernel, thetas = self.layers()
         optimizer.max_iterations = options.get('maxiter', 100)
@@ -144,6 +144,9 @@ class VqeQnp(object):
 
             exp_vals.append(exp_val)
 
+            new_theta = theta[:]
+            new_theta[0] = theta[0] + np.pi / 2
+            gradient = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
             return exp_val
 
         energy, parameter = optimizer.optimize(self.num_params, eval)
