@@ -27,7 +27,7 @@ if __name__ == "__main__":
     start = time.time()
     hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
     end = time.time()
-    print("time for preparing the cudaq hamiltonian": end-start)
+    print("time for preparing the cudaq hamiltonian:", end-start)
 
     n_qubits = 2 * num_active_orbitals
 
