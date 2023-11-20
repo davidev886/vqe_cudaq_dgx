@@ -1,9 +1,17 @@
 import numpy as np
 
 import cudaq
+from utils_cudaq import buildOperatorMatrix
+import pandas as pd
+
 
 class VqeQnp(object):
-    def __init__(self, n_qubits, n_layers, init_mo_occ=None, target="nvidia"):
+    def __init__(self,
+                 n_qubits,
+                 n_layers,
+                 init_mo_occ=None,
+                 target="nvidia",
+                 system_name="FeNTA"):
         self.n_qubits = n_qubits
         self.n_layers = n_layers
         self.number_of_Q_blocks = n_qubits // 2 - 1
@@ -14,6 +22,10 @@ class VqeQnp(object):
         self.best_vqe_energy = None
         self.target = target
         self.initial_x_gates_pos = self.prepare_initial_circuit()
+
+        self.spin_s_square = buildOperatorMatrix("total", n_qubits)
+        self.spin_s_z = buildOperatorMatrix("projected", n_qubits)
+        self.system_name = system_name
 
     def prepare_initial_circuit(self):
         """
@@ -59,7 +71,7 @@ class VqeQnp(object):
                 for idx_block in range(starting_block_num, number_of_blocks, 2):
                     qubit_list = [qubits[2 * idx_block + j] for j in range(4)]
 
-                    #print(idx_block,
+                    # print(idx_block,
                     #      "theta",
                     #      idx_layer * number_of_blocks + idx_block,
                     #      [2 * idx_block + j for j in range(4)]
@@ -114,7 +126,7 @@ class VqeQnp(object):
         """
         Run VQE
         """
-        #optimizer = cudaq.optimizers.NelderMead()
+        # optimizer = cudaq.optimizers.NelderMead()
         optimizer = cudaq.optimizers.LBFGS()
         optimizer.initial_parameters = np.random.rand(self.num_params)
         kernel, thetas = self.layers()
@@ -131,7 +143,7 @@ class VqeQnp(object):
         #    optimizer=optimizer,
         #    parameter_count=self.num_params)
 
-        #def eval(theta):
+        # def eval(theta):
         #    # Callback goes here
         #    value = cudaq.observe(kernel, hamiltonian, thetas).expectation_z()
         #    print(value)
@@ -146,7 +158,7 @@ class VqeQnp(object):
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
                 d_1 = 1 / 2.
                 d_2 = (np.sqrt(2) - 1) / 4.
-                alpha = np.pi /2
+                alpha = np.pi / 2
                 beta = np.pi
 
                 gradient_list = [0] * len(theta)
@@ -175,4 +187,23 @@ class VqeQnp(object):
         energy, parameter = optimizer.optimize(self.num_params, eval)
         # energy, parameter = optimizer.optimize(self.num_params, eval)
 
+        info_final_state = dict()
+
+        print("")
+        print("Num Params:", self.num_params)
+        print("qubits:", self.n_qubits)
+        print("n_layers:", self.n_layers)
+        print("Energy after the VQE:", energy)
+
+        spin_value = cudaq.observe(kernel, self.spin_s_square, parameter).expectation_z()
+
+        spin_proj = cudaq.observe(kernel, self.spin_s_z, parameter).expectation_z()
+        print("S^2:", spin_value)
+        print("S_z:", spin_proj)
+        info_final_state["S^2"] = spin_value
+        info_final_state["S_z"] = spin_proj
+        info_final_state["energy_optimized"] = energy
+
+        df = pd.DataFrame(info_final_state, index=[0])
+        df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers.csv', index=False)
         return energy, parameter, exp_vals

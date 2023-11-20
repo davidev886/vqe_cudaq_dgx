@@ -1,5 +1,7 @@
 import cudaq
 from cudaq import spin as spin_op
+import openfermion as of
+from openfermion.hamiltonians import s_squared_operator
 
 
 def from_string_to_cudaq_spin(pauli_string, qubit):
@@ -31,3 +33,46 @@ def get_cudaq_hamiltonian(jw_hamiltonian):
         hamiltonian_cudaq += cuda_operator
 
     return hamiltonian_cudaq
+
+
+def buildOperatorMatrix(name: str, n_qubits):
+    """The name can either be: number, alpha, beta, projected or total."""
+
+    operator = of.FermionOperator()
+
+    if name == "number":
+        for i in range(n_qubits):
+            operator += of.FermionOperator(
+                '{index}^ {index}'.format(index=i, ))
+
+    elif name == "alpha":
+        for i in range(n_qubits):
+            if i % 2 == 0:
+                operator += of.FermionOperator(
+                    '{index}^ {index}'.format(index=i, ))
+
+    elif name == "beta":
+        for i in range(n_qubits):
+            if i % 2 == 1:
+                operator += of.FermionOperator(
+                    '{index}^ {index}'.format(index=i, ))
+
+    elif name == "projected":
+        alpha_number_operator = of.FermionOperator()
+        beta_number_operator = of.FermionOperator()
+
+        for i in range(n_qubits):
+            if i % 2 == 0:
+                alpha_number_operator += of.FermionOperator(
+                    '{index}^ {index}'.format(index=i, ))
+            elif i % 2 == 1:
+                beta_number_operator += of.FermionOperator(
+                    '{index}^ {index}'.format(index=i, ))
+        operator = 1 / 2 * (alpha_number_operator - beta_number_operator)
+
+    elif name == "total":
+        operator = s_squared_operator(n_spatial_orbitals=n_qubits // 2)
+
+    sparse_operator = of.get_sparse_operator(operator, n_qubits=n_qubits)
+
+    return sparse_operator

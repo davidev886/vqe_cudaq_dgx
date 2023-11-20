@@ -34,14 +34,15 @@ if __name__ == "__main__":
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
     init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
-
+    system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o"
     results = []
     for n_vqe_layers in [1, 2 , 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
                      init_mo_occ=init_mo_occ,
-                     target=target)
+                     target=target,
+                     system_name=system_name)
 
         energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
         exp_vals = np.array(exp_vals)
