@@ -94,7 +94,11 @@ def get_cudaq_operator(jw_hamiltonian):
                 cuda_operator *= from_string_to_cudaq_spin(pauli_op, qubit_index)
         else:
             cuda_operator = from_string_to_cudaq_spin('id', 0)
-        cuda_operator = ham_coeff * cuda_operator
+        if abs(ham_coeff.imag) < 1e-8:
+            cuda_operator = ham_coeff.real * cuda_operator
+        else:
+            print("In function get_cudaq_operator can convert only real operator to cuda_operator")
+            exit()
         hamiltonian_cudaq += cuda_operator
 
     return hamiltonian_cudaq
