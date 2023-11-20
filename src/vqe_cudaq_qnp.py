@@ -143,11 +143,34 @@ class VqeQnp(object):
             exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation_z()
 
             exp_vals.append(exp_val)
+            if isinstance(optimizer, cudaq.optimizers.LBFGS):
+                d_1 = 1 / 2.
+                d_2 = (np.sqrt(2) - 1) / 4.
+                alpha = np.pi /2
+                beta = np.pi
 
-            new_theta = theta[:]
-            new_theta[0] = theta[0] + np.pi / 2
-            gradient = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
-            return exp_val
+                gradient_list = []
+
+                for j in range(len(theta)):
+                    new_theta = theta[:]
+                    new_theta[j] = theta[j] + alpha
+                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+
+                    new_theta[j] = theta[j] - alpha
+                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+
+                    new_theta[j] = theta[j] + beta
+                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+
+                    new_theta[j] = theta[j] - beta
+                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+
+                    gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
+
+                return exp_val, gradient_list
+            else:
+
+                return exp_val
 
         energy, parameter = optimizer.optimize(self.num_params, eval)
         # energy, parameter = optimizer.optimize(self.num_params, eval)
