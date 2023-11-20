@@ -149,7 +149,7 @@ class VqeQnp(object):
                 alpha = np.pi /2
                 beta = np.pi
 
-                gradient_list = []
+                gradient_list = [0] * len(theta)
 
                 for j in range(len(theta)):
                     new_theta = theta[:]
