@@ -7,7 +7,7 @@
   "chkptfile_rohf": "/gpfs/backup/users/home/vodolad/FeNTA_spin_1/basis_cc-pVTZ/ROHF/scfref.chk",
   "basis": "cc-pVTZ",
   "atom": "geo.xyz",
-  "dmrg": 1,
+  "dmrg": 0,
   "dmrg_states": 200,
   "target" : "nvidia"
 }

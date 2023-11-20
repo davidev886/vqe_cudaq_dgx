@@ -13,6 +13,7 @@ if __name__ == "__main__":
         options = json.load(f)
 
     target = options.get("target", "nvidia")
+    print("target", target)
     num_active_orbitals = options.get("num_active_orbitals", 5)
     num_active_electrons = options.get("num_active_electrons", 5)
     basis = options.get("basis", 'cc-pVTZ').lower()
@@ -39,7 +40,8 @@ if __name__ == "__main__":
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
-                     init_mo_occ=init_mo_occ)
+                     init_mo_occ=init_mo_occ,
+                     target=target)
 
         energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
         exp_vals = np.array(exp_vals)
@@ -54,7 +56,6 @@ if __name__ == "__main__":
                    f"cas_{num_active_electrons}e_{num_active_orbitals}o_"
                    f"layer_{n_vqe_layers}.dat",
                    exp_vals)
-
 
     np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
                np.array(results))
