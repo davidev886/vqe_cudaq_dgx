@@ -1,7 +1,7 @@
 import numpy as np
 
 import cudaq
-from utils_cudaq import buildOperatorMatrix
+from src.utils_cudaq import buildOperatorMatrix
 import pandas as pd
 
 
