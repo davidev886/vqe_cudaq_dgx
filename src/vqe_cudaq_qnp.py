@@ -213,8 +213,10 @@ class VqeQnp(object):
                 return gradient_list
 
         if optimizer_type == "cudaq":
+            print("Using cudaq optimizer")
             energy, parameter = optimizer.optimize(self.num_params, eval)
         else:
+            print("Using scipy optimizer")
             x0 = np.random.uniform(low=0, high=2 * np.pi, size=self.num_params)
             result = minimize(to_minimize,
                               x0,

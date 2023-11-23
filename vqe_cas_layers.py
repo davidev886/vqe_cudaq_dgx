@@ -22,6 +22,7 @@ if __name__ == "__main__":
     dmrg_states = options.get("dmrg_states", 1000)
     spin = options.get("spin", 1)
     hamiltonian_fname = options.get("hamiltonian_fname", 1)
+    optimizer_type = options.get("optimizer_type", "cudaq")
 
     filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)
@@ -44,7 +45,9 @@ if __name__ == "__main__":
                      target=target,
                      system_name=system_name)
 
-        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000, 'callback': True})
+        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000,
+                                                                                 'callback': True,
+                                                                                 'optimizer_type': optimizer_type})
         exp_vals = np.array(exp_vals)
         exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
         print(energy, params)
