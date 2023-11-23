@@ -64,13 +64,18 @@ class VqeQnp(object):
 
         for init_gate_position in self.initial_x_gates_pos:
             kernel.x(qubits[init_gate_position])
+        spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation_z()
+
+        spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation_z()
+        print("initial S^2:", spin_value_initial)
+        print("initial S_z:", spin_proj_initial)
 
         count_params = 0
         for idx_layer in range(n_layers):
             for starting_block_num in [0, 1]:
                 for idx_block in range(starting_block_num, number_of_blocks, 2):
                     qubit_list = [qubits[2 * idx_block + j] for j in range(4)]
-
+                    print([2 * idx_block + j for j in range(4)])
                     # print(idx_block,
                     #      "theta",
                     #      idx_layer * number_of_blocks + idx_block,
