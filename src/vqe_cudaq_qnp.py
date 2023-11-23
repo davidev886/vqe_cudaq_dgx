@@ -77,7 +77,6 @@ class VqeQnp(object):
             for starting_block_num in [0, 1]:
                 for idx_block in range(starting_block_num, number_of_blocks, 2):
                     qubit_list = [qubits[2 * idx_block + j] for j in range(4)]
-                    print([2 * idx_block + j for j in range(4)])
                     # print(idx_block,
                     #      "theta",
                     #      idx_layer * number_of_blocks + idx_block,
