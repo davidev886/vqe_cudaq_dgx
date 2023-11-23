@@ -3,6 +3,7 @@ import numpy as np
 import cudaq
 from src.utils_cudaq import buildOperatorMatrix
 import pandas as pd
+from scipy.optimize import minimize
 
 
 class VqeQnp(object):
@@ -57,7 +58,8 @@ class VqeQnp(object):
         n_layers = self.n_layers
         number_of_blocks = self.number_of_Q_blocks
         # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
-        cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
+        if self.target != "":
+            cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
         kernel, thetas = cudaq.make_kernel(list)
         # Allocate n qubits.
         qubits = kernel.qalloc(n_qubits)
@@ -135,32 +137,56 @@ class VqeQnp(object):
         optimizer = cudaq.optimizers.LBFGS()
         optimizer.initial_parameters = np.random.rand(self.num_params)
         kernel, thetas = self.layers()
-        optimizer.max_iterations = options.get('maxiter', 100)
-
+        maxiter = options.get('maxiter', 100)
+        optimizer.max_iterations = options.get('maxiter', maxiter)
+        optimizer_type = options.get('optimizer_type', "cudaq")
         # optimizer...
-
-        # Finally, we can pass all of that into `cudaq.vqe` and it will automatically run our
-        # optimization loop and return a tuple of the minimized eigenvalue of our `spin_operator`
-        # and the list of optimal variational parameters.
-        # energy, parameter = cudaq.vqe(
-        #    kernel=kernel,
-        #    spin_operator=hamiltonian,
-        #    optimizer=optimizer,
-        #    parameter_count=self.num_params)
-
-        # def eval(theta):
-        #    # Callback goes here
-        #    value = cudaq.observe(kernel, hamiltonian, thetas).expectation_z()
-        #    print(value)
-        #    return value
 
         exp_vals = []
 
         def eval(theta):
-            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation_z()
+            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
 
             exp_vals.append(exp_val)
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
+                d_1 = 1 / 2.
+                d_2 = (np.sqrt(2) - 1) / 4.
+                alpha = np.pi / 2
+                beta = np.pi
+
+                gradient_list = [0] * len(theta)
+
+                for j in range(len(theta)):
+                    new_theta = theta[:]
+                    new_theta[j] = theta[j] + alpha
+                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+
+                    new_theta[j] = theta[j] - alpha
+                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+
+                    new_theta[j] = theta[j] + beta
+                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+
+                    new_theta[j] = theta[j] - beta
+                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+
+                    gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
+
+                return exp_val, gradient_list
+            else:
+
+                return exp_val
+
+        # def callback_func(theta):
+        #     exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
+        #     exp_vals.append(exp_val)
+
+        def to_minimize(theta):
+            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
+            exp_vals.append(exp_val)
+            return exp_val
+
+        def compute_gradient(theta):
                 d_1 = 1 / 2.
                 d_2 = (np.sqrt(2) - 1) / 4.
                 alpha = np.pi / 2
@@ -184,12 +210,24 @@ class VqeQnp(object):
 
                     gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
 
-                return exp_val, gradient_list
-            else:
+                return gradient_list
 
-                return exp_val
+        if optimizer_type == "cudaq":
+            energy, parameter = optimizer.optimize(self.num_params, eval)
+        else:
+            x0 = np.random.uniform(low=0, high=2 * np.pi, size=self.num_params)
+            result = minimize(to_minimize,
+                              x0,
+                              jac=compute_gradient,
+                              method='L-BFGS-B',
+                              # callback=callback_func,
+                              options={'maxiter': maxiter,
+                                       'disp': True,
+                                       })
 
-        energy, parameter = optimizer.optimize(self.num_params, eval)
+            parameter = result.x
+            energy = result.fun
+
         # energy, parameter = optimizer.optimize(self.num_params, eval)
 
         info_final_state = dict()
