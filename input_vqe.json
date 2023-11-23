@@ -9,5 +9,6 @@
   "atom": "geo.xyz",
   "dmrg": 0,
   "dmrg_states": 200,
-  "target" : "nvidia"
+  "target" : "",
+  "optimizer_type": "scipy"
 }
