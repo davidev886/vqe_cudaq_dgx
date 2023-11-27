@@ -260,5 +260,5 @@ class VqeQnp(object):
         info_final_state["energy_optimized"] = energy
 
         df = pd.DataFrame(info_final_state, index=[0])
-        df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers.csv', index=False)
+        df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers_opt_{optimizer_type}.csv', index=False)
         return energy, parameter, exp_vals
