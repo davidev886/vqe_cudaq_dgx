@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
     init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
-    system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o"
+    system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
     for n_vqe_layers in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
@@ -59,12 +59,12 @@ if __name__ == "__main__":
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
-        np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+        np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}.dat",
                    np.array(results))
 
         np.savetxt(f"expvals_energy_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_{num_active_orbitals}o_"
-                   f"layer_{n_vqe_layers}.dat",
+                   f"layer_{n_vqe_layers}_opt_{optimizer_type}.dat",
                    exp_vals)
         time_end = time.time()
         info_time["num_layer"].append(n_vqe_layers)
@@ -72,10 +72,10 @@ if __name__ == "__main__":
 
         if len(info_time["num_layer"])  > 1:
             df = pd.DataFrame(info_time)
-            df.to_csv(f'{system_name}_info_time_layers.csv')
+            df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')
 
-    np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o.dat",
+    np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}.dat",
                np.array(results))
 
     df = pd.DataFrame(info_time)
-    df.to_csv(f'{system_name}_info_time_layers.csv')
+    df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')

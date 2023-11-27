@@ -236,7 +236,7 @@ class VqeQnp(object):
             options = {'bounds': bounds,
                        'maxfevals': maxiter,
                        'verbose': -3,
-                       'tolfun': 1e-6}
+                       'tolfun': 1e-5}
             es = cma.CMAEvolutionStrategy(x0, sigma, options)
             es.optimize(to_minimize)
             res = es.result
