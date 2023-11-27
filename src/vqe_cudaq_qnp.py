@@ -4,7 +4,7 @@ import cudaq
 from src.utils_cudaq import buildOperatorMatrix
 import pandas as pd
 from scipy.optimize import minimize
-
+import cma
 
 class VqeQnp(object):
     def __init__(self,
@@ -228,14 +228,22 @@ class VqeQnp(object):
             parameter = result.x
             energy = result.fun
         elif optimizer_type == "cma":
-            pass
-
-
-
-        # energy, parameter = optimizer.optimize(self.num_params, eval)
+            print("cma optimizer")
+            sigma = 1
+            x0 = np.random.uniform(low=-np.pi, high=np.pi, size=self.num_params)
+            print(f'starting training with sigma at value {sigma}')
+            bounds = [self.num_params * [-np.pi], self.num_params * [np.pi]]
+            options = {'bounds': bounds,
+                       'maxfevals': maxiter,
+                       'verbose': -3,
+                       'tolfun': 1e-6}
+            es = cma.CMAEvolutionStrategy(x0, sigma, options)
+            es.optimize(to_minimize)
+            res = es.result
+            energy = res.fbest
+            parameter = res.xbest
 
         info_final_state = dict()
-
         print("")
         print("Num Params:", self.num_params)
         print("qubits:", self.n_qubits)
