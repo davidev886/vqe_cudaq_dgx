@@ -41,7 +41,7 @@ if __name__ == "__main__":
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
-    for n_vqe_layers in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
+    for n_vqe_layers in [1, 2]: #, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
 
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         time_start = time.time()
@@ -50,13 +50,26 @@ if __name__ == "__main__":
                      init_mo_occ=init_mo_occ,
                      target=target,
                      system_name=system_name)
-
-        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000,
+        if n_vqe_layers == 1:
+            energy, parameter, exp_vals, kernel, qubits = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000,
                                                                                  'callback': True,
                                                                                  'optimizer_type': optimizer_type})
+        else:
+            print("more layer")
+            options = {'maxiter': 10000,
+                       'callback': True,
+                       'optimizer_type': optimizer_type,
+                       'initial_parameters': parameter
+                       }
+
+            energy, parameter, exp_vals, kernel, qubits = vqe.run_vqe_cudaq(hamiltonian_cudaq,
+                                                                            kernel_start=kernel,
+                                                                            qubits_start=qubits,
+                                                                            options=options)
+
         exp_vals = np.array(exp_vals)
         exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
-        print(energy, params)
+        print(energy, parameter)
         print()
         results.append([n_vqe_layers, energy])
         np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}.dat",

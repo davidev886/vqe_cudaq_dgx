@@ -43,7 +43,7 @@ class VqeQnp(object):
 
         return x_gates_pos_list
 
-    def layers(self):
+    def layers(self, kernel=None, qubits=None, thetas=None):
         """
             Generates the QNP ansatz circuit and returns the  kernel and the optimization paramenters thetas
 
@@ -54,34 +54,14 @@ class VqeQnp(object):
             returns: kernel
                      thetas
         """
-        n_qubits = self.n_qubits
         n_layers = self.n_layers
         number_of_blocks = self.number_of_Q_blocks
-        # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
-        if self.target != "":
-            cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
-        kernel, thetas = cudaq.make_kernel(list)
-        # Allocate n qubits.
-        qubits = kernel.qalloc(n_qubits)
-
-        for init_gate_position in self.initial_x_gates_pos:
-            kernel.x(qubits[init_gate_position])
-        spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation_z()
-
-        spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation_z()
-        print("initial S^2:", spin_value_initial)
-        print("initial S_z:", spin_proj_initial)
 
         count_params = 0
         for idx_layer in range(n_layers):
             for starting_block_num in [0, 1]:
                 for idx_block in range(starting_block_num, number_of_blocks, 2):
                     qubit_list = [qubits[2 * idx_block + j] for j in range(4)]
-                    # print(idx_block,
-                    #      "theta",
-                    #      idx_layer * number_of_blocks + idx_block,
-                    #      [2 * idx_block + j for j in range(4)]
-                    #      )
 
                     # PX gates decomposed in terms of standard gates
                     # and NO controlled Y rotations.
@@ -128,54 +108,53 @@ class VqeQnp(object):
 
         return kernel, thetas
 
-    def run_vqe_cudaq(self, hamiltonian, options=None):
+    def run_vqe_cudaq(self, hamiltonian, kernel_start=None, qubits_start=None, options=None):
         """
         Run VQE
         """
         # optimizer = cudaq.optimizers.NelderMead()
-        optimizer = cudaq.optimizers.LBFGS()
-        optimizer.initial_parameters = np.random.rand(self.num_params)
-        kernel, thetas = self.layers()
-        maxiter = options.get('maxiter', 100)
-        optimizer.max_iterations = options.get('maxiter', maxiter)
+        if self.target != "":
+            cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
+
         optimizer_type = options.get('optimizer_type', "cudaq")
         # optimizer...
+        initial_parameters = options.get('initial_parameters', None)
+
+        if initial_parameters is None:
+            n_qubits = self.n_qubits
+
+            # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
+
+            kernel, thetas = cudaq.make_kernel(list)
+            # Allocate n qubits.
+            qubits = kernel.qalloc(n_qubits)
+
+            for init_gate_position in self.initial_x_gates_pos:
+                kernel.x(qubits[init_gate_position])
+
+            spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation_z()
+            spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation_z()
+            print("initial S^2:", spin_value_initial)
+            print("initial S_z:", spin_proj_initial)
+            kernel, thetas = self.layers(kernel=kernel,
+                                         qubits=qubits,
+                                         thetas=thetas)
+        else:
+            spin_value_initial = cudaq.observe(kernel_start, self.spin_s_square, initial_parameters).expectation_z()
+            spin_proj_initial = cudaq.observe(kernel_start, self.spin_s_z, initial_parameters).expectation_z()
+            print("initial S^2:", spin_value_initial)
+            print("initial S_z:", spin_proj_initial)
+
+            thetas = np.pad(initial_parameters, (0, self.num_params - len(initial_parameters)))
+            print("initial_parameters", initial_parameters)
+            print()
+            print("thetas", thetas)
+            print(kernel_start)
+            kernel, thetas = self.layers(kernel=kernel_start,
+                                         qubits=qubits_start,
+                                         thetas=thetas)
 
         exp_vals = []
-
-        def eval(theta):
-            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
-
-            exp_vals.append(exp_val)
-            if isinstance(optimizer, cudaq.optimizers.LBFGS):
-                d_1 = 1 / 2.
-                d_2 = (np.sqrt(2) - 1) / 4.
-                alpha = np.pi / 2
-                beta = np.pi
-
-                gradient_list = [0] * len(theta)
-
-                for j in range(len(theta)):
-                    new_theta = theta[:]
-                    new_theta[j] = theta[j] + alpha
-                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
-
-                    new_theta[j] = theta[j] - alpha
-                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
-
-                    new_theta[j] = theta[j] + beta
-                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
-
-                    new_theta[j] = theta[j] - beta
-                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
-
-                    gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
-
-                return exp_val, gradient_list
-            else:
-
-                return exp_val
-
         # def callback_func(theta):
         #     exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
         #     exp_vals.append(exp_val)
@@ -185,58 +164,25 @@ class VqeQnp(object):
             exp_vals.append(exp_val)
             return exp_val
 
-        def compute_gradient(theta):
-                d_1 = 1 / 2.
-                d_2 = (np.sqrt(2) - 1) / 4.
-                alpha = np.pi / 2
-                beta = np.pi
-
-                gradient_list = [0] * len(theta)
-
-                for j in range(len(theta)):
-                    new_theta = theta[:]
-                    new_theta[j] = theta[j] + alpha
-                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
-
-                    new_theta[j] = theta[j] - alpha
-                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
-
-                    new_theta[j] = theta[j] + beta
-                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
-
-                    new_theta[j] = theta[j] - beta
-                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
-
-                    gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
-
-                return gradient_list
-
         if optimizer_type == "cudaq":
             print("Using cudaq optimizer")
-            energy, parameter = optimizer.optimize(self.num_params, eval)
-        elif optimizer_type == "scipy":
-            print("Using scipy optimizer")
-            x0 = np.random.uniform(low=0, high=2 * np.pi, size=self.num_params)
-            result = minimize(to_minimize,
-                              x0,
-                              jac=compute_gradient,
-                              method='L-BFGS-B',
-                              # callback=callback_func,
-                              options={'maxiter': maxiter,
-                                       'disp': True,
-                                       })
-            parameter = result.x
-            energy = result.fun
+            optimizer = cudaq.optimizers.COBYLA()
+            optimizer.initial_parameters = np.random.rand(self.num_params)
+            kernel, thetas = self.layers()
+            maxiter = options.get('maxiter', 100)
+            optimizer.max_iterations = options.get('maxiter', maxiter)
+            energy, parameter = optimizer.optimize(self.num_params, to_minimize)
         elif optimizer_type == "cma":
             print("cma optimizer")
             sigma = 1
             x0 = np.random.uniform(low=-np.pi, high=np.pi, size=self.num_params)
             print(f'starting training with sigma at value {sigma}')
             bounds = [self.num_params * [-np.pi], self.num_params * [np.pi]]
+            maxiter = options.get('maxiter', 100)
             options = {'bounds': bounds,
                        'maxfevals': maxiter,
                        'verbose': -3,
-                       'tolfun': 1e-5}
+                       'tolfun': 1e-1}
             es = cma.CMAEvolutionStrategy(x0, sigma, options)
             es.optimize(to_minimize)
             res = es.result
@@ -261,4 +207,4 @@ class VqeQnp(object):
 
         df = pd.DataFrame(info_final_state, index=[0])
         df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers_opt_{optimizer_type}.csv', index=False)
-        return energy, parameter, exp_vals
+        return energy, parameter, exp_vals, kernel, qubits
