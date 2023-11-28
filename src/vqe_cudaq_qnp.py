@@ -230,14 +230,27 @@ class VqeQnp(object):
         elif optimizer_type == "cma":
             print("cma optimizer")
             sigma = 1
-            x0 = np.random.uniform(low=-np.pi, high=np.pi, size=self.num_params)
+
+            initial_parameters = options.get("initial_parameters", None)
+            if initial_parameters is None:
+                x0 = np.random.uniform(low=-np.pi, high=np.pi, size=self.num_params)
+                print(f'starting training with random parameters')
+                print(x0)
+            else:
+                x0 = np.pad(initial_parameters,
+                            (0, self.num_params - len(initial_parameters)),
+                            constant_values=0.01)
+                print(f'starting training with previous parameters')
+                print(x0)
+
             print(f'starting training with sigma at value {sigma}')
+
             bounds = [self.num_params * [-np.pi], self.num_params * [np.pi]]
-            options = {'bounds': bounds,
-                       'maxfevals': maxiter,
-                       'verbose': -3,
-                       'tolfun': 1e-5}
-            es = cma.CMAEvolutionStrategy(x0, sigma, options)
+            options_opt = {'bounds': bounds,
+                           'maxfevals': maxiter,
+                           'verbose': -3,
+                           'tolfun': 1e-5}
+            es = cma.CMAEvolutionStrategy(x0, sigma, options_opt)
             es.optimize(to_minimize)
             res = es.result
             energy = res.fbest

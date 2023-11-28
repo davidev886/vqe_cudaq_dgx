@@ -51,9 +51,18 @@ if __name__ == "__main__":
                      target=target,
                      system_name=system_name)
 
-        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options={'maxiter': 10000,
-                                                                                 'callback': True,
-                                                                                 'optimizer_type': optimizer_type})
+        if n_vqe_layers == 1:
+            options = {'maxiter': 10000,
+                       'callback': True,
+                       'optimizer_type': optimizer_type}
+        else:
+            options = {'maxiter': 10000,
+                       'callback': True,
+                       'optimizer_type': optimizer_type,
+                       'initial_parameters': params}
+
+        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options=options)
+
         exp_vals = np.array(exp_vals)
         exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
         print(energy, params)
@@ -70,7 +79,7 @@ if __name__ == "__main__":
         info_time["num_layer"].append(n_vqe_layers)
         info_time["time_vqe"].append(time_end - time_start)
 
-        if len(info_time["num_layer"])  > 1:
+        if len(info_time["num_layer"]) > 1:
             df = pd.DataFrame(info_time)
             df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')
 
