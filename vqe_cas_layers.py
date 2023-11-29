@@ -63,12 +63,15 @@ if __name__ == "__main__":
 
         energy_0, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options=options)
         energy = energy_0 + energy_core
-        exp_vals = np.array(exp_vals)
+        exp_vals = np.array(exp_vals) + energy_core
         exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
-        np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}.dat",
+        np.savetxt(f"energy_fenta_{basis.lower()}_"
+                   f"cas_{num_active_electrons}e_"
+                   f"{num_active_orbitals}o_"
+                   f"opt_{optimizer_type}.dat",
                    np.array(results))
 
         np.savetxt(f"expvals_energy_fenta_{basis.lower()}_"
@@ -83,7 +86,10 @@ if __name__ == "__main__":
             df = pd.DataFrame(info_time)
             df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')
 
-    np.savetxt(f"energy_fenta_{basis.lower()}_cas_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}.dat",
+    np.savetxt(f"energy_fenta_{basis.lower()}_"
+               f"cas_{num_active_electrons}e_"
+               f"{num_active_orbitals}o_"
+               f"opt_{optimizer_type}.dat",
                np.array(results))
 
     df = pd.DataFrame(info_time)
