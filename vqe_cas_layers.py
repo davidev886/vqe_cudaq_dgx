@@ -30,7 +30,7 @@ if __name__ == "__main__":
     filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)
     start = time.time()
-    hamiltonian_cudaq = get_cudaq_hamiltonian(jw_hamiltonian)
+    hamiltonian_cudaq, energy_core = get_cudaq_hamiltonian(jw_hamiltonian)
     end = time.time()
     print("time for preparing the cudaq hamiltonian:", end-start)
 
@@ -52,17 +52,17 @@ if __name__ == "__main__":
                      system_name=system_name)
 
         if n_vqe_layers == 1:
-            options = {'maxiter': 10000,
+            options = {'maxiter': 50000,
                        'callback': True,
                        'optimizer_type': optimizer_type}
         else:
-            options = {'maxiter': 10000,
+            options = {'maxiter': 50000,
                        'callback': True,
                        'optimizer_type': optimizer_type,
                        'initial_parameters': params}
 
-        energy, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options=options)
-
+        energy_0, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options=options)
+        energy = energy_0 + energy_core
         exp_vals = np.array(exp_vals)
         exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
         print(energy, params)
