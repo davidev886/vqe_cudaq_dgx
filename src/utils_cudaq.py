@@ -28,11 +28,12 @@ def get_cudaq_hamiltonian(jw_hamiltonian):
             for qubit_index, pauli_op in operators:
                 cuda_operator *= from_string_to_cudaq_spin(pauli_op, qubit_index)
         else:
-            cuda_operator = from_string_to_cudaq_spin('id', 0)
+            cuda_operator = 0.0 #from_string_to_cudaq_spin('id', 0)
+            energy_core = ham_coeff
         cuda_operator = ham_coeff * cuda_operator
         hamiltonian_cudaq += cuda_operator
 
-    return hamiltonian_cudaq
+    return hamiltonian_cudaq, energy_core
 
 
 def buildOperatorMatrix(name: str, n_qubits):
