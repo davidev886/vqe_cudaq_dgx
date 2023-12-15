@@ -38,11 +38,12 @@ if __name__ == "__main__":
         dir_path = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o"
 
     h1 = np.load(os.path.join(dir_path, "h1.npy"))
-    tbi = np.load(os.path.join(dir_path,"tbi.npy")) 
+    tbi = np.load(os.path.join(dir_path,"tbi.npy"))
     energy_core = np.load(os.path.join(dir_path,"energy_core.npy"))
-    
-    mol_ham = generate_hamiltonian(h1, tbi, energy_core.item())
+
+    mol_ham = generate_hamiltonian(h1, tbi, energy_core.item(), EQ_TOLERANCE=1e-8)
     jw_hamiltonian = jordan_wigner(mol_ham)
+    print("number of terms in H", len(jw_hamiltonian.terms))
     filehandler = open(os.path.join(dir_path, hamiltonian_fname), 'wb')
     pickle.dump(jw_hamiltonian, filehandler)
 
