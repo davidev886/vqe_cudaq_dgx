@@ -57,7 +57,7 @@ class VqeQnp(object):
         n_qubits = self.n_qubits
         n_layers = self.n_layers
         number_of_blocks = self.number_of_Q_blocks
-        # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu
+        # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu or tensornet-mps
         if self.target != "":
             cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
         kernel, thetas = cudaq.make_kernel(list)
@@ -144,7 +144,10 @@ class VqeQnp(object):
         exp_vals = []
 
         def eval(theta):
-            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
+            exp_val = cudaq.observe(kernel,
+                                    hamiltonian,
+                                    theta,
+                                    execution=cudaq.parallel.thread).expectation()
 
             exp_vals.append(exp_val)
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
@@ -181,7 +184,10 @@ class VqeQnp(object):
         #     exp_vals.append(exp_val)
 
         def to_minimize(theta):
-            exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
+            exp_val = cudaq.observe(kernel,
+                                    hamiltonian,
+                                    theta,
+                                    execution=cudaq.parallel.thread).expectation()
             exp_vals.append(exp_val)
             return exp_val
 
