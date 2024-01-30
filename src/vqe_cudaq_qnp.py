@@ -60,15 +60,32 @@ class VqeQnp(object):
         # cudaq.set_target("nvidia-mgpu") # nvidia or nvidia-mgpu or tensornet-mps
         if self.target != "":
             cudaq.set_target(self.target)  # nvidia or nvidia-mgpu
+            target = cudaq.get_target()
+            self.num_qpus = target.num_qpus()
+        else:
+            self.num_qpus = 0
+
         kernel, thetas = cudaq.make_kernel(list)
         # Allocate n qubits.
         qubits = kernel.qalloc(n_qubits)
 
         for init_gate_position in self.initial_x_gates_pos:
             kernel.x(qubits[init_gate_position])
-        spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation_z()
+        if self.num_qpus:
+            spin_value_initial = cudaq.observe(kernel,
+                                               self.spin_s_square,
+                                               [],
+                                               execution=cudaq.parallel.thread
+                                               ).expectation()
 
-        spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation_z()
+            spin_proj_initial = cudaq.observe(kernel,
+                                              self.spin_s_z,
+                                              [],
+                                              execution=cudaq.parallel.thread
+                                              ).expectation()
+        else:
+            spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation()
+            spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation()
         print("initial S^2:", spin_value_initial)
         print("initial S_z:", spin_proj_initial)
 
@@ -144,10 +161,15 @@ class VqeQnp(object):
         exp_vals = []
 
         def eval(theta):
-            exp_val = cudaq.observe(kernel,
+            if self.num_qpus:
+                exp_val = cudaq.observe(kernel,
+                                        hamiltonian,
+                                        theta,
+                                        execution=cudaq.parallel.thread).expectation()
+            else:
+                exp_val = cudaq.observe(kernel,
                                     hamiltonian,
-                                    theta,
-                                    execution=cudaq.parallel.thread).expectation()
+                                    theta).expectation()
 
             exp_vals.append(exp_val)
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
@@ -161,16 +183,48 @@ class VqeQnp(object):
                 for j in range(len(theta)):
                     new_theta = theta[:]
                     new_theta[j] = theta[j] + alpha
-                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+                    if self.num_qpus:
+                        term_1 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] - alpha
-                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+                        new_theta[j] = theta[j] - alpha
+                        term_2 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] + beta
-                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+                        new_theta[j] = theta[j] + beta
+                        term_3 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] - beta
-                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation()
+                        new_theta[j] = theta[j] - beta
+                        term_4 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
+                    else:
+                        term_1 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] - alpha
+                        term_2 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] + beta
+                        term_3 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] - beta
+                        term_4 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
 
                     gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
 
@@ -184,10 +238,16 @@ class VqeQnp(object):
         #     exp_vals.append(exp_val)
 
         def to_minimize(theta):
-            exp_val = cudaq.observe(kernel,
-                                    hamiltonian,
-                                    theta,
-                                    execution=cudaq.parallel.thread).expectation()
+            if self.num_qpus:
+                exp_val = cudaq.observe(kernel,
+                                        hamiltonian,
+                                        theta,
+                                        execution=cudaq.parallel.thread).expectation()
+            else:
+                exp_val = cudaq.observe(kernel,
+                                        hamiltonian,
+                                        theta).expectation()
+
             exp_vals.append(exp_val)
             return exp_val
 
@@ -202,16 +262,48 @@ class VqeQnp(object):
                 for j in range(len(theta)):
                     new_theta = theta[:]
                     new_theta[j] = theta[j] + alpha
-                    term_1 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+                    if self.num_qpus:
+                        term_1 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] - alpha
-                    term_2 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+                        new_theta[j] = theta[j] - alpha
+                        term_2 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] + beta
-                    term_3 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+                        new_theta[j] = theta[j] + beta
+                        term_3 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
 
-                    new_theta[j] = theta[j] - beta
-                    term_4 = cudaq.observe(kernel, hamiltonian, new_theta).expectation_z()
+                        new_theta[j] = theta[j] - beta
+                        term_4 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta,
+                                               execution=cudaq.parallel.thread).expectation()
+                    else:
+                        term_1 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] - alpha
+                        term_2 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] + beta
+                        term_3 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
+
+                        new_theta[j] = theta[j] - beta
+                        term_4 = cudaq.observe(kernel,
+                                               hamiltonian,
+                                               new_theta).expectation()
 
                     gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
 
@@ -269,9 +361,22 @@ class VqeQnp(object):
         print("n_layers:", self.n_layers)
         print("Energy after the VQE:", energy)
 
-        spin_value = cudaq.observe(kernel, self.spin_s_square, parameter).expectation_z()
+        if self.num_qpus:
+            spin_value = cudaq.observe(kernel,
+                                               self.spin_s_square,
+                                               [],
+                                               execution=cudaq.parallel.thread
+                                               ).expectation()
 
-        spin_proj = cudaq.observe(kernel, self.spin_s_z, parameter).expectation_z()
+            spin_proj = cudaq.observe(kernel,
+                                              self.spin_s_z,
+                                              [],
+                                              execution=cudaq.parallel.thread
+                                              ).expectation()
+        else:
+            spin_value = cudaq.observe(kernel, self.spin_s_square, []).expectation()
+            spin_proj = cudaq.observe(kernel, self.spin_s_z, []).expectation()
+
         print("S^2:", spin_value)
         print("S_z:", spin_proj)
         info_final_state["S^2"] = spin_value
