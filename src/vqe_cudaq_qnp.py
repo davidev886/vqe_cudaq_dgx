@@ -364,18 +364,18 @@ class VqeQnp(object):
         if self.num_qpus:
             spin_value = cudaq.observe(kernel,
                                                self.spin_s_square,
-                                               [],
+                                               parameter,
                                                execution=cudaq.parallel.thread
                                                ).expectation()
 
             spin_proj = cudaq.observe(kernel,
                                               self.spin_s_z,
-                                              [],
+                                              parameter,
                                               execution=cudaq.parallel.thread
                                               ).expectation()
         else:
-            spin_value = cudaq.observe(kernel, self.spin_s_square, []).expectation()
-            spin_proj = cudaq.observe(kernel, self.spin_s_z, []).expectation()
+            spin_value = cudaq.observe(kernel, self.spin_s_square, parameter).expectation()
+            spin_proj = cudaq.observe(kernel, self.spin_s_z, parameter).expectation()
 
         print("S^2:", spin_value)
         print("S_z:", spin_proj)
