@@ -8,10 +8,12 @@ from src.utils_cudaq import get_cudaq_hamiltonian
 import time
 from collections import defaultdict
 import pandas as pd
-
+from datetime import datetime
 
 if __name__ == "__main__":
     np.set_printoptions(precision=6, suppress=True, linewidth=10000)
+    str_date = datetime.today().strftime('%Y%m%d_%H%M%S')
+    os.makedirs(str_date)
     with open(sys.argv[1]) as f:
         options = json.load(f)
 
@@ -68,13 +70,13 @@ if __name__ == "__main__":
         print(energy, params)
         print()
         results.append([n_vqe_layers, energy])
-        np.savetxt(f"energy_fenta_{basis.lower()}_"
+        np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
                    f"opt_{optimizer_type}.dat",
                    np.array(results))
 
-        np.savetxt(f"expvals_energy_fenta_{basis.lower()}_"
+        np.savetxt(f"{str_date}/expvals_energy_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_{num_active_orbitals}o_"
                    f"layer_{n_vqe_layers}_opt_{optimizer_type}.dat",
                    exp_vals)
@@ -84,13 +86,20 @@ if __name__ == "__main__":
 
         if len(info_time["num_layer"]) > 1:
             df = pd.DataFrame(info_time)
-            df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')
+        else:
+            df = pd.DataFrame(info_time, index=[0])
 
-    np.savetxt(f"energy_fenta_{basis.lower()}_"
+        df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
+
+    np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
                f"cas_{num_active_electrons}e_"
                f"{num_active_orbitals}o_"
                f"opt_{optimizer_type}.dat",
                np.array(results))
 
-    df = pd.DataFrame(info_time)
-    df.to_csv(f'{system_name}_info_time_layers_opt_{optimizer_type}.csv')
+    if len(info_time["num_layer"]) > 1:
+        df = pd.DataFrame(info_time)
+    else:
+        df = pd.DataFrame(info_time, index=[0])
+
+    df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
