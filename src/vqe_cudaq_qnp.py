@@ -73,7 +73,7 @@ class VqeQnp(object):
 
         for init_gate_position in self.initial_x_gates_pos:
             kernel.x(qubits[init_gate_position])
-        if self.num_qpus:
+        if self.num_qpus > 1:
             spin_value_initial = cudaq.observe(kernel,
                                                self.spin_s_square,
                                                [],
@@ -163,7 +163,7 @@ class VqeQnp(object):
         exp_vals = []
 
         def eval(theta):
-            if self.num_qpus:
+            if self.num_qpus > 1:
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
@@ -185,7 +185,7 @@ class VqeQnp(object):
                 for j in range(len(theta)):
                     new_theta = theta[:]
                     new_theta[j] = theta[j] + alpha
-                    if self.num_qpus:
+                    if self.num_qpus > 1:
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
@@ -240,7 +240,7 @@ class VqeQnp(object):
         #     exp_vals.append(exp_val)
 
         def to_minimize(theta):
-            if self.num_qpus:
+            if self.num_qpus > 1:
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
@@ -264,7 +264,7 @@ class VqeQnp(object):
                 for j in range(len(theta)):
                     new_theta = theta[:]
                     new_theta[j] = theta[j] + alpha
-                    if self.num_qpus:
+                    if self.num_qpus > 1:
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
@@ -363,7 +363,7 @@ class VqeQnp(object):
         print("n_layers:", self.n_layers)
         print("Energy after the VQE:", energy)
 
-        if self.num_qpus:
+        if self.num_qpus > 1:
             spin_value = cudaq.observe(kernel,
                                                self.spin_s_square,
                                                parameter,
