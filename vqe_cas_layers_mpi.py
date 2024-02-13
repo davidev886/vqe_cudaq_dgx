@@ -27,6 +27,8 @@ if __name__ == "__main__":
     spin = options.get("spin", 1)
     hamiltonian_fname = options.get("hamiltonian_fname", 1)
     optimizer_type = options.get("optimizer_type", "cudaq")
+    start_layer = options.get("start_layer", 1)
+    end_layer = options.get("end_layer", 10)
 
     str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
     str_date =  options.get("data_dir", "")

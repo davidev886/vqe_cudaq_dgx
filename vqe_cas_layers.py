@@ -27,6 +27,8 @@ if __name__ == "__main__":
     spin = options.get("spin", 1)
     hamiltonian_fname = options.get("hamiltonian_fname", 1)
     optimizer_type = options.get("optimizer_type", "cudaq")
+    start_layer = options.get("start_layer", 1)
+    end_layer = options.get("end_layer", 10)
 
     str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
     str_date =  options.get("data_dir", "")
@@ -54,7 +56,7 @@ if __name__ == "__main__":
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
-    for count_layer, n_vqe_layers in enumerate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]):
+    for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
 
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         time_start = time.time()
