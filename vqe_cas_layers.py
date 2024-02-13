@@ -12,8 +12,7 @@ from datetime import datetime
 
 if __name__ == "__main__":
     np.set_printoptions(precision=6, suppress=True, linewidth=10000)
-    str_date = datetime.today().strftime('%Y%m%d_%H%M%S')
-    os.makedirs(str_date)
+
     with open(sys.argv[1]) as f:
         options = json.load(f)
 
@@ -28,6 +27,18 @@ if __name__ == "__main__":
     spin = options.get("spin", 1)
     hamiltonian_fname = options.get("hamiltonian_fname", 1)
     optimizer_type = options.get("optimizer_type", "cudaq")
+
+    str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
+    str_date =  options.get("data_dir", "")
+    if len(str_date) == 0:
+        str_date = str_date_0
+    else:
+        str_date = str_date + "_" + str_date_0
+
+    os.makedirs(str_date, exist_ok=True)
+
+    with open(f'{str_date}/{sys.argv[1]}', 'w') as f:
+        json.dump(options, f, ensure_ascii=False, indent=4)
 
     filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)

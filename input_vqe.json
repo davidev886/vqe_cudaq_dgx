@@ -10,5 +10,6 @@
   "dmrg": 0,
   "dmrg_states": 200,
   "target" : "",
-  "optimizer_type": "scipy"
+  "optimizer_type": "scipy",
+  "data_dir": "ID"
 }
