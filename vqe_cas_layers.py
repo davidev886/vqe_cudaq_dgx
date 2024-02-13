@@ -54,7 +54,7 @@ if __name__ == "__main__":
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
-    for n_vqe_layers in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]:
+    for count_layer, n_vqe_layers in enumerate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]):
 
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         time_start = time.time()
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                      target=target,
                      system_name=system_name)
 
-        if n_vqe_layers == 1:
+        if count_layer == 0:
             options = {'maxiter': 50000,
                        'callback': True,
                        'optimizer_type': optimizer_type}
