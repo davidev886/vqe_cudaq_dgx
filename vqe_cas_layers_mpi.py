@@ -104,6 +104,12 @@ if __name__ == "__main__":
 
         df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
 
+        np.savetxt(f"{str_date}/best_params_fenta_{basis.lower()}_"
+                   f"cas_{num_active_electrons}e_"
+                   f"{num_active_orbitals}o_"
+                   f"opt_{optimizer_type}.dat",
+                   np.array(params))
+
     np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
                f"cas_{num_active_electrons}e_"
                f"{num_active_orbitals}o_"
