@@ -52,7 +52,15 @@ if __name__ == "__main__":
     n_qubits = 2 * num_active_orbitals
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
-    init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
+    # init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
+
+    n_alpha = int((num_active_electrons + spin) / 2)
+    n_beta = int((num_active_electrons - spin) / 2)
+
+    n_alpha_vec = np.array([1] * n_alpha + [0] * (num_active_orbitals - n_alpha))
+    n_beta_vec = np.array([1] * n_beta + [0] * (num_active_orbitals - n_beta))
+    init_mo_occ = (n_alpha_vec + n_beta_vec).tolist()
+    
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
