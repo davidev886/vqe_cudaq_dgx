@@ -103,12 +103,12 @@ if __name__ == "__main__":
             df = pd.DataFrame(info_time, index=[0])
 
         df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
-
+        info_params = [energy] + np.array(params).tolist()
         np.savetxt(f"{str_date}/best_params_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
                    f"opt_{optimizer_type}.dat",
-                   np.array(params))
+                   np.array(info_params))
 
     np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
                f"cas_{num_active_electrons}e_"
