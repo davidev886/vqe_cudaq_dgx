@@ -60,7 +60,7 @@ if __name__ == "__main__":
     n_alpha_vec = np.array([1] * n_alpha + [0] * (num_active_orbitals - n_alpha))
     n_beta_vec = np.array([1] * n_beta + [0] * (num_active_orbitals - n_beta))
     init_mo_occ = (n_alpha_vec + n_beta_vec).tolist()
-    
+
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
     results = []
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         np.savetxt(f"{str_date}/best_params_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
-                   f"opt_{optimizer_type}.dat",
+                   f"layer_{n_vqe_layers}_opt_{optimizer_type}.dat",
                    np.array(info_params))
 
     np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"

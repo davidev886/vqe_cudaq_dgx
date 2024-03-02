@@ -115,7 +115,7 @@ if __name__ == "__main__":
         np.savetxt(f"{str_date}/best_params_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
-                   f"opt_{optimizer_type}.dat",
+                   f"layer_{n_vqe_layers}_opt_{optimizer_type}.dat",
                    np.array(info_params))
 
     np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
