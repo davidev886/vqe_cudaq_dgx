@@ -29,6 +29,7 @@ if __name__ == "__main__":
     optimizer_type = options.get("optimizer_type", "cudaq")
     start_layer = options.get("start_layer", 1)
     end_layer = options.get("end_layer", 10)
+    init_params = options.get("init_params", None)
 
     str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
     str_date =  options.get("data_dir", "")
@@ -75,9 +76,16 @@ if __name__ == "__main__":
                      system_name=system_name)
 
         if count_layer == 0:
-            options = {'maxiter': 50000,
-                       'callback': True,
-                       'optimizer_type': optimizer_type}
+            if init_params:
+                params = np.loadtxt(init_params)
+                options = {'maxiter': 50000,
+                           'callback': True,
+                           'optimizer_type': optimizer_type,
+                           'initial_parameters': params}
+            else:
+                options = {'maxiter': 50000,
+                           'callback': True,
+                           'optimizer_type': optimizer_type}
         else:
             options = {'maxiter': 50000,
                        'callback': True,
