@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
         if count_layer == 0:
             if init_params:
-                params = np.loadtxt(init_params)
+                params = np.loadtxt(init_params)[1: ]  # first row contains best energy
                 options = {'maxiter': 50000,
                            'callback': True,
                            'optimizer_type': optimizer_type,
