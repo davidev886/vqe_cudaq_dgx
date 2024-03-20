@@ -396,3 +396,19 @@ class VqeQnp(object):
         df = pd.DataFrame(info_final_state, index=[0])
         df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers_opt_{optimizer_type}.csv', index=False)
         return energy, parameter, exp_vals
+
+    def compute_energy(self, hamiltonian, params):
+        kernel, thetas = self.layers()
+
+        if self.num_qpus > 1:
+            exp_val = cudaq.observe(kernel,
+                                    hamiltonian,
+                                    params,
+                                    execution=cudaq.parallel.thread).expectation()
+        else:
+            exp_val = cudaq.observe(kernel,
+                                    hamiltonian,
+                                    params).expectation()
+        print("parameters", params)
+        print("energy from vqe", exp_val)
+        return exp_val
