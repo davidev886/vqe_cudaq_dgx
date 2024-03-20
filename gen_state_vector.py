@@ -52,7 +52,7 @@ if __name__ == "__main__":
     n_beta_vec = np.array([1] * n_beta + [0] * (num_active_orbitals - n_beta))
     init_mo_occ = (n_alpha_vec + n_beta_vec).tolist()
     params = np.loadtxt(init_params)[1: ]
-    n_vqe_layers = len(params) / (n_qubits - 2)
+    n_vqe_layers = len(params) // (n_qubits - 2)
 
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}_wf"
 
@@ -63,4 +63,4 @@ if __name__ == "__main__":
                  system_name=system_name)
 
     state_vector = vqe.get_state_vector(params)
-
+    np.savetxt(f"state_vec_{n_vqe_layers}.dat", state_vector)
