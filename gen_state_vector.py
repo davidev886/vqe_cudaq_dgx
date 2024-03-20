@@ -40,6 +40,13 @@ if __name__ == "__main__":
 
     os.makedirs(str_date, exist_ok=True)
 
+    filehandler = open(hamiltonian_fname, 'rb')
+    jw_hamiltonian = pickle.load(filehandler)
+    start = time.time()
+    hamiltonian_cudaq, energy_core = get_cudaq_hamiltonian(jw_hamiltonian)
+    end = time.time()
+    print("time for preparing the cudaq hamiltonian:", end-start)
+
     n_qubits = 2 * num_active_orbitals
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
@@ -61,6 +68,7 @@ if __name__ == "__main__":
                  init_mo_occ=init_mo_occ,
                  target=target,
                  system_name=system_name)
-
+    energy_check = vqe.compute_energy(hamiltonian_cudaq, params)
+    print("total energy", energy_core, energy_check, energy_check + energy_core)
     state_vector = vqe.get_state_vector(params)
     np.savetxt(f"state_vec_{n_vqe_layers}.dat", state_vector)
