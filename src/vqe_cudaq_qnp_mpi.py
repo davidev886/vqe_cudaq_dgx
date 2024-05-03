@@ -151,6 +151,8 @@ class VqeQnp(object):
         """
         Run VQE
         """
+        cudaq.mpi.initialize()
+        print('mpi is initialized? ', cudaq.mpi.is_initialized())
         optimizer = cudaq.optimizers.COBYLA()
         #optimizer = cudaq.optimizers.LBFGS()
         optimizer.initial_parameters = np.random.rand(self.num_params)
