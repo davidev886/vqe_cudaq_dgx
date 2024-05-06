@@ -6,8 +6,6 @@ import numpy as np
 import cudaq
 from src.utils_cudaq import buildOperatorMatrix
 import pandas as pd
-from scipy.optimize import minimize
-import cma
 
 
 class VqeQnp(object):
