@@ -60,4 +60,6 @@ if __name__ == "__main__":
 
     energy_optimized, best_parameters, callback_energies = vqe.run_vqe_cudaq(hamiltonian_cudaq,
                                                                              options=options)
+    time_end = time.time()
     print(f"# Best energy {energy_optimized}")
+    print(f"# VQE time {time_end - time_start}")
