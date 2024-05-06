@@ -151,7 +151,11 @@ class VqeQnp(object):
         print('# rank', rank, 'num_ranks', num_ranks)
 
         optimizer = cudaq.optimizers.COBYLA()
-        optimizer.initial_parameters = np.random.rand(self.num_params)
+        if options['initial_parameters']:
+            optimizer.initial_parameters = np.random.rand(self.num_params)
+        else:
+            optimizer.initial_parameters = np.random.rand(self.num_params)
+
         kernel, thetas = self.layers()
         maxiter = options.get('maxiter', 100)
         optimizer.max_iterations = options.get('maxiter', maxiter)

@@ -69,7 +69,8 @@ if __name__ == "__main__":
 
     options = {'maxiter': 50000,
                'optimizer_type': optimizer_type,
-               'energy_core': energy_core}
+               'energy_core': energy_core,
+               'initial_parameters': None}
 
     results = []
     for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
