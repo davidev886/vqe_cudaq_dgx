@@ -78,16 +78,16 @@ class VqeQnp(object):
                                                self.spin_s_square,
                                                [],
                                                execution=cudaq.parallel.mpi
-                                               ).expectation()
+                                               ).expectation_z()
 
             spin_proj_initial = cudaq.observe(kernel,
                                               self.spin_s_z,
                                               [],
                                               execution=cudaq.parallel.mpi
-                                              ).expectation()
+                                              ).expectation_z()
         else:
-            spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation()
-            spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation()
+            spin_value_initial = cudaq.observe(kernel, self.spin_s_square, []).expectation_z()
+            spin_proj_initial = cudaq.observe(kernel, self.spin_s_z, []).expectation_z()
         print("initial S^2:", spin_value_initial)
         print("initial S_z:", spin_proj_initial)
 
@@ -169,11 +169,11 @@ class VqeQnp(object):
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
-                                        execution=cudaq.parallel.mpi).expectation()
+                                        execution=cudaq.parallel.mpi).expectation_z()
             else:
                 exp_val = cudaq.observe(kernel,
                                     hamiltonian,
-                                    theta).expectation()
+                                    theta).expectation_z()
 
             exp_vals.append(exp_val)
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
@@ -191,44 +191,44 @@ class VqeQnp(object):
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] - alpha
                         term_2 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] + beta
                         term_3 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] - beta
                         term_4 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
                     else:
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] - alpha
                         term_2 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] + beta
                         term_3 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] - beta
                         term_4 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                     gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
 
@@ -238,7 +238,7 @@ class VqeQnp(object):
                 return exp_val
 
         # def callback_func(theta):
-        #     exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation()
+        #     exp_val = cudaq.observe(kernel, hamiltonian, theta).expectation_z()
         #     exp_vals.append(exp_val)
 
         def to_minimize(theta):
@@ -246,11 +246,11 @@ class VqeQnp(object):
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
-                                        execution=cudaq.parallel.mpi).expectation()
+                                        execution=cudaq.parallel.mpi).expectation_z()
             else:
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
-                                        theta).expectation()
+                                        theta).expectation_z()
 
             exp_vals.append(exp_val)
             return exp_val
@@ -270,44 +270,44 @@ class VqeQnp(object):
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] - alpha
                         term_2 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] + beta
                         term_3 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
 
                         new_theta[j] = theta[j] - beta
                         term_4 = cudaq.observe(kernel,
                                                hamiltonian,
                                                new_theta,
-                                               execution=cudaq.parallel.mpi).expectation()
+                                               execution=cudaq.parallel.mpi).expectation_z()
                     else:
                         term_1 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] - alpha
                         term_2 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] + beta
                         term_3 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                         new_theta[j] = theta[j] - beta
                         term_4 = cudaq.observe(kernel,
                                                hamiltonian,
-                                               new_theta).expectation()
+                                               new_theta).expectation_z()
 
                     gradient_list[j] = d_1 * (term_1 - term_2) - d_2 * (term_3 - term_4)
 
@@ -370,16 +370,16 @@ class VqeQnp(object):
                                                self.spin_s_square,
                                                parameter,
                                                execution=cudaq.parallel.mpi
-                                               ).expectation()
+                                               ).expectation_z()
 
             spin_proj = cudaq.observe(kernel,
                                               self.spin_s_z,
                                               parameter,
                                               execution=cudaq.parallel.mpi
-                                              ).expectation()
+                                              ).expectation_z()
         else:
-            spin_value = cudaq.observe(kernel, self.spin_s_square, parameter).expectation()
-            spin_proj = cudaq.observe(kernel, self.spin_s_z, parameter).expectation()
+            spin_value = cudaq.observe(kernel, self.spin_s_square, parameter).expectation_z()
+            spin_proj = cudaq.observe(kernel, self.spin_s_z, parameter).expectation_z()
 
         print("S^2:", spin_value)
         print("S_z:", spin_proj)
