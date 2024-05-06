@@ -1,3 +1,6 @@
+"""
+Contains the main file for running a complete VQE of the FeNTA system
+"""
 import numpy as np
 import sys
 import os
@@ -32,7 +35,7 @@ if __name__ == "__main__":
     init_params = options.get("init_params", None)
 
     str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
-    str_date =  options.get("data_dir", "")
+    str_date = options.get("data_dir", "")
     if len(str_date) == 0:
         str_date = str_date_0
     else:
@@ -48,12 +51,11 @@ if __name__ == "__main__":
     start = time.time()
     hamiltonian_cudaq, energy_core = get_cudaq_hamiltonian(jw_hamiltonian)
     end = time.time()
-    print("time for preparing the cudaq hamiltonian:", end-start)
+    print("# Time for preparing the cudaq hamiltonian:", end-start)
 
     n_qubits = 2 * num_active_orbitals
 
     empty_orbitals = num_active_orbitals - ((num_active_electrons // 2) + (num_active_electrons % 2))
-    # init_mo_occ = [2] * (num_active_electrons // 2) + [1] * (num_active_electrons % 2) + [0] * empty_orbitals
 
     n_alpha = int((num_active_electrons + spin) / 2)
     n_beta = int((num_active_electrons - spin) / 2)
@@ -64,9 +66,14 @@ if __name__ == "__main__":
 
     system_name = f"FeNTA_s_{spin}_{basis.lower()}_{num_active_electrons}e_{num_active_orbitals}o_opt_{optimizer_type}"
     info_time = defaultdict(list)
+
+    options = {'maxiter': 50000,
+               'optimizer_type': optimizer_type,
+               'energy_core': energy_core}
+
     results = []
     for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
-
+        best_parameters = None
         print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
         time_start = time.time()
         vqe = VqeQnp(n_qubits=n_qubits,
@@ -77,39 +84,29 @@ if __name__ == "__main__":
 
         if count_layer == 0:
             if init_params:
-                params = np.loadtxt(init_params)[1: ]  # first row contains best energy
-                options = {'maxiter': 50000,
-                           'callback': True,
-                           'optimizer_type': optimizer_type,
-                           'initial_parameters': params}
-            else:
-                options = {'maxiter': 50000,
-                           'callback': True,
-                           'optimizer_type': optimizer_type}
+                initial_parameters = np.loadtxt(init_params)[1:]  # first row contains best energy
+                options['initial_parameters'] = initial_parameters
         else:
-            options = {'maxiter': 50000,
-                       'callback': True,
-                       'optimizer_type': optimizer_type,
-                       'initial_parameters': params}
+            # use as starting parameters the best from previous VQE
+            options['initial_parameters'] = best_parameters
 
-        energy_0, params, exp_vals = vqe.run_vqe_cudaq(hamiltonian_cudaq, options=options)
-        energy = energy_0 + energy_core
-        exp_vals = np.array(exp_vals) + energy_core
-        exp_vals = np.reshape(exp_vals, (exp_vals.size, 1))
-        print(energy, params)
-        print()
-        results.append([n_vqe_layers, energy])
+        energy_optimized, best_parameters, callback_energies = vqe.run_vqe_cudaq(hamiltonian_cudaq,
+                                                                                 options=options)
+        print(energy_optimized, best_parameters)
+
+        results.append([n_vqe_layers, energy_optimized])
         np.savetxt(f"{str_date}/energy_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
                    f"opt_{optimizer_type}.dat",
                    np.array(results))
 
-        np.savetxt(f"{str_date}/expvals_energy_fenta_{basis.lower()}_"
+        np.savetxt(f"{str_date}/callback_energies_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_{num_active_orbitals}o_"
                    f"layer_{n_vqe_layers}_opt_{optimizer_type}.dat",
-                   exp_vals)
+                   callback_energies)
         time_end = time.time()
+
         info_time["num_layer"].append(n_vqe_layers)
         info_time["time_vqe"].append(time_end - time_start)
 
@@ -119,7 +116,7 @@ if __name__ == "__main__":
             df = pd.DataFrame(info_time, index=[0])
 
         df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
-        info_params = [energy] + np.array(params).tolist()
+        info_params = [energy_optimized] + np.array(best_parameters).tolist()
         np.savetxt(f"{str_date}/best_params_fenta_{basis.lower()}_"
                    f"cas_{num_active_electrons}e_"
                    f"{num_active_orbitals}o_"
@@ -138,5 +135,3 @@ if __name__ == "__main__":
         df = pd.DataFrame(info_time, index=[0])
 
     df.to_csv(f'{str_date}/{system_name}_info_time_layers_opt_{optimizer_type}.csv', index=False)
-
-

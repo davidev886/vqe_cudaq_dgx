@@ -151,11 +151,11 @@ class VqeQnp(object):
         optimizer.max_iterations = options.get('maxiter', maxiter)
         optimizer_type = "cudaq"
         debug = options.get('debug', False)
-        exp_vals = []
+        callback_energies = []
 
         def eval(theta):
             """
-            compute the energy
+            Compute the energy by using different execution types
             """
             if self.num_qpus > 1:
                 exp_val = cudaq.observe(kernel,
@@ -168,26 +168,31 @@ class VqeQnp(object):
                                         theta).expectation()
             if debug:
                 print("# inside eval ->", exp_val)
-            exp_vals.append(exp_val)
+            callback_energies.append(exp_val)
             return exp_val
 
         if optimizer_type == "cudaq":
             print("# Using cudaq optimizer")
-            energy, parameter = optimizer.optimize(self.num_params, eval)
+            energy_optimized, best_parameters = optimizer.optimize(self.num_params, eval)
+
+            # We add here the energy core
+            energy_core = options.get('energy_core', 0.)
+            total_opt_energy = energy_optimized + energy_core
+            callback_energies = [en + energy_core for en in callback_energies]
 
             info_final_state = dict()
             print("")
             print("# Num Params:", self.num_params)
-            print("# qubits:", self.n_qubits)
-            print("# n_layers:", self.n_layers)
-            print("# Energy after the VQE:", energy)
+            print("# Qubits:", self.n_qubits)
+            print("# N_layers:", self.n_layers)
+            print("# Energy after the VQE:", total_opt_energy)
 
-            info_final_state["energy_optimized"] = energy
+            info_final_state["total_opt_energy"] = total_opt_energy
 
             df = pd.DataFrame(info_final_state, index=[0])
             df.to_csv(f'{self.system_name}_info_final_state_{self.n_layers}_layers_opt_{optimizer_type}.csv',
                       index=False)
-            return energy, parameter, exp_vals
+            return total_opt_energy, best_parameters, callback_energies
 
         else:
             print(f"# Optimizer {optimizer_type} not implemented")
