@@ -171,12 +171,14 @@ class VqeQnp(object):
         exp_vals = []
 
         def eval(theta):
+            print("inside eval")
             if self.num_qpus > 1:
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
                                         execution=cudaq.parallel.thread).expectation()
             else:
+                print("inside eval num_qpus == 1")
                 exp_val = cudaq.observe(kernel,
                                     hamiltonian,
                                     theta).expectation()
