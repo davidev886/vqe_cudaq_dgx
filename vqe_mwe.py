@@ -2,28 +2,51 @@
 Contains the main file for running a complete VQE of the FeNTA system
 """
 import numpy as np
-import sys
 import pickle
 import json
+import time
+import argparse
 from src.vqe_cudaq_qnp import VqeQnp
 from src.utils_cudaq import get_cudaq_hamiltonian
-import time
+
 
 if __name__ == "__main__":
     np.set_printoptions(precision=6, suppress=True, linewidth=10000)
 
-    with open(sys.argv[1]) as f:
-        options = json.load(f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mpi",
+                        action='store_true',
+                        help="Use mpi")
 
-    target = options.get("target", "nvidia")
-    print("target", target)
-    num_active_orbitals = options.get("num_active_orbitals", 5)
-    num_active_electrons = options.get("num_active_electrons", 5)
-    n_vqe_layers = options.get("n_vqe_layers", 1)
-    spin = options.get("spin", 1)
-    hamiltonian_fname = options.get("hamiltonian_fname", None)
-    optimizer_type = options.get("optimizer_type", "cudaq")
-    mpi_support = options.get("mpi_support", False)
+    parser.add_argument("-i", "--input",
+                        dest="input_filename",
+                        type=str,
+                        help="parameter file for VQE in json format")
+
+    args = parser.parse_args()
+    mpi_support = args.mpi
+
+    if args.input_filename:
+        with open(args.input_filename) as f:
+            options = json.load(f)
+        target = options.get("target", "nvidia-mqpu")
+        num_active_orbitals = options.get("num_active_orbitals", 5)
+        num_active_electrons = options.get("num_active_electrons", 5)
+        n_vqe_layers = options.get("n_vqe_layers", 1)
+        spin = options.get("spin", 1)
+        hamiltonian_fname = options.get("hamiltonian_fname", "FeNTA_s_1_cc-pvtz_5e_5o/ham_FeNTA_cc-pvtz_5e_5o.pickle")
+        optimizer_type = options.get("optimizer_type", "cudaq")
+    else:
+        target = "nvidia-mqpu"
+        num_active_orbitals = 5
+        num_active_electrons = 5
+        n_vqe_layers = 1
+        spin = 1
+        hamiltonian_fname = "FeNTA_s_1_cc-pvtz_5e_5o/ham_FeNTA_cc-pvtz_5e_5o.pickle"
+        optimizer_type = "cudaq"
+
+    print("# Mpi_support", mpi_support)
+    print("# Target", target)
 
     with open(hamiltonian_fname, 'rb') as filehandler:
         jw_hamiltonian = pickle.load(filehandler)
