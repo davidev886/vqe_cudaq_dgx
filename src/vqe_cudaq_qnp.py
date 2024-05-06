@@ -182,7 +182,7 @@ class VqeQnp(object):
                 exp_val = cudaq.observe(kernel,
                                     hamiltonian,
                                     theta).expectation()
-
+                print("inside eval ->", exp_val)
             exp_vals.append(exp_val)
             if isinstance(optimizer, cudaq.optimizers.LBFGS):
                 d_1 = 1 / 2.
