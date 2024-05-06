@@ -25,8 +25,9 @@ if __name__ == "__main__":
     optimizer_type = options.get("optimizer_type", "cudaq")
     mpi_support = options.get("mpi_support", False)
 
-    filehandler = open(hamiltonian_fname, 'rb')
-    jw_hamiltonian = pickle.load(filehandler)
+    with open(hamiltonian_fname, 'rb') as filehandler:
+        jw_hamiltonian = pickle.load(filehandler)
+
     start = time.time()
     hamiltonian_cudaq, energy_core = get_cudaq_hamiltonian(jw_hamiltonian)
     end = time.time()
