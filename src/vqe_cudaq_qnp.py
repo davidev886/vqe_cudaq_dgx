@@ -144,11 +144,13 @@ class VqeQnp(object):
         """
         Run VQE
         """
-        cudaq.mpi.initialize()
-        print('# mpi is initialized? ', cudaq.mpi.is_initialized())
-        num_ranks = cudaq.mpi.num_ranks()
-        rank = cudaq.mpi.rank()
-        print('# rank', rank, 'num_ranks', num_ranks)
+        mpi_support = options.get("mpi_support", False)
+        if mpi_support:
+            cudaq.mpi.initialize()
+            print('# mpi is initialized? ', cudaq.mpi.is_initialized())
+            num_ranks = cudaq.mpi.num_ranks()
+            rank = cudaq.mpi.rank()
+            print('# rank', rank, 'num_ranks', num_ranks)
 
         optimizer = cudaq.optimizers.COBYLA()
         if options['initial_parameters']:

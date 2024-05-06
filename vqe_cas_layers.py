@@ -33,6 +33,7 @@ if __name__ == "__main__":
     start_layer = options.get("start_layer", 1)
     end_layer = options.get("end_layer", 10)
     init_params = options.get("init_params", None)
+    mpi_support = options.get("mpi_support", False)
 
     str_date_0 = datetime.today().strftime('%Y%m%d_%H%M%S')
     str_date = options.get("data_dir", "")
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     options = {'maxiter': 50000,
                'optimizer_type': optimizer_type,
                'energy_core': energy_core,
+               'mpi_support': mpi_support,
                'initial_parameters': None}
 
     results = []
