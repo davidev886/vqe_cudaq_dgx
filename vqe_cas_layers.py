@@ -74,7 +74,8 @@ if __name__ == "__main__":
     results = []
     for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
         best_parameters = None
-        print("# Start VQE with init_mo_occ", init_mo_occ, "layers", n_vqe_layers)
+        print("# init_mo_occ", init_mo_occ)
+        print("# layers", n_vqe_layers)
         time_start = time.time()
         vqe = VqeQnp(n_qubits=n_qubits,
                      n_layers=n_vqe_layers,
