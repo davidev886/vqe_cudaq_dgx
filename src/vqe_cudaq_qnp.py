@@ -191,7 +191,6 @@ class VqeQnp(object):
             callback_energies = [en + energy_core for en in callback_energies]
 
             info_final_state = dict()
-            print("")
             print("# Num Params:", self.num_params)
             print("# Qubits:", self.n_qubits)
             print("# N_layers:", self.n_layers)
