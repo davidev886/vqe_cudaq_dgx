@@ -74,8 +74,8 @@ if __name__ == "__main__":
                'mpi_support': mpi_support}
 
     results = []
+    best_parameters = None
     for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
-        best_parameters = None
         print("# init_mo_occ", init_mo_occ)
         print("# layers", n_vqe_layers)
         time_start = time.time()
