@@ -71,8 +71,7 @@ if __name__ == "__main__":
     options = {'maxiter': 50000,
                'optimizer_type': optimizer_type,
                'energy_core': energy_core,
-               'mpi_support': mpi_support,
-               'initial_parameters': None}
+               'mpi_support': mpi_support}
 
     results = []
     for count_layer, n_vqe_layers in enumerate(range(start_layer, end_layer + 1)):
@@ -90,6 +89,8 @@ if __name__ == "__main__":
             if init_params:
                 initial_parameters = np.loadtxt(init_params)[1:]  # first row contains best energy
                 options['initial_parameters'] = initial_parameters
+            else:
+                options['initial_parameters'] = np.random.rand(vqe.num_params)
         else:
             # use as starting parameters the best from previous VQE
             options['initial_parameters'] = best_parameters
