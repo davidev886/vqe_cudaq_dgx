@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     with open(f'{str_date}/{sys.argv[1]}', 'w') as f:
         json.dump(options, f, ensure_ascii=False, indent=4)
-
+    print("# Preparing the cudaq hamiltonian...")
     filehandler = open(hamiltonian_fname, 'rb')
     jw_hamiltonian = pickle.load(filehandler)
     start = time.time()
