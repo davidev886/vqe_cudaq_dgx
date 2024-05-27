@@ -151,7 +151,7 @@ class VqeQnp(object):
             print('# rank', rank, 'num_ranks', num_ranks)
 
         optimizer = cudaq.optimizers.COBYLA()
-        if options['initial_parameters']:
+        if len(options['initial_parameters']):
             optimizer.initial_parameters = np.random.rand(self.num_params)
         else:
             optimizer.initial_parameters = np.random.rand(self.num_params)
