@@ -167,7 +167,7 @@ class VqeQnp(object):
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
                                         theta,
-                                        execution=cudaq.parallel.thread).expectation()
+                                        execution=cudaq.parallel.mpi).expectation()
             else:
                 exp_val = cudaq.observe(kernel,
                                         hamiltonian,
@@ -213,7 +213,7 @@ class VqeQnp(object):
             exp_val = cudaq.observe(kernel,
                                     hamiltonian,
                                     params,
-                                    execution=cudaq.parallel.thread).expectation()
+                                    execution=cudaq.parallel.mpi).expectation()
         else:
             exp_val = cudaq.observe(kernel,
                                     hamiltonian,
